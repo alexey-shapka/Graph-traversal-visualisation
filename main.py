@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 from matplotlib import animation
 import numpy as np
-import time
 
 class Ant:
     def __init__(self, x, y):
@@ -34,18 +33,19 @@ class Graph:
             lines = file.readlines()
             for i in range(len(lines)):
                 if '#' not in lines[i] and lines[i] != '\n':
-                    if len(lines[i]) == 2:
-                        ants = int(lines[i])
-                    elif 'L' in lines[i]:
-                        self.turns.append([list(map(int, j[1:].split('-'))) for j in lines[i].rstrip().split(' ')])
+                    if 'L' in lines[i]:
+                        self.turns.append([j[1:].split('-') for j in lines[i].rstrip().split(' ')])
                     else:
                         if '-' in lines[i]:
-                            self.graph.append(lines[i].replace('\n', '').split('-'))
+                            self.graph.append(lines[i].rstrip().split('-'))
                         else:
-                            data = lines[i].split(' ')
-                            self.node_coordinates[data[0]] = list(map(int, data[1:]))
+                            data = lines[i].rstrip().split(' ')
+                            if len(data) == 1:
+                                ants = int(lines[i])
+                            else:
+                                self.node_coordinates[data[0]] = list(map(int, data[1:]))
                 elif '##start' in lines[i]:
-                    start = list(map(int, lines[i+1].split(' ')))[1:]
+                    start = list(map(int, lines[i+1].split(' ')[1:]))
 
         for i in range(ants):
             self.ants.append(Ant(*start))
@@ -77,8 +77,8 @@ class Graph:
             if len(self.turns) != 0:
                 turn = self.turns.pop(0)
                 for i in turn:
-                    ant = self.ants[i[0]-1]
-                    self.create_path(ant.x, ant.y, *self.node_coordinates[str(i[1])], i[0]-1)
+                    ant = self.ants[int(i[0])-1]
+                    self.create_path(ant.x, ant.y, *self.node_coordinates[str(i[1])], int(i[0])-1)
             else:
                 self.animation.event_source.stop()
                 plt.xlabel('\nEveryone at home!', fontsize=13, horizontalalignment='center')
@@ -96,5 +96,5 @@ class Graph:
         self.animation = animation.FuncAnimation(self.figure, self.show_ants_ways, frames=200, interval=20)
         plt.show()
 
-g = Graph(speed=20)
+g = Graph(speed=10)
 g.show()
